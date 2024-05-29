@@ -74,6 +74,8 @@ func TestUnifiedAddress(t *testing.T) {
 			t.Errorf("%s%d", e, i)
 		}
 		// prepare an empty slice for encoding
+
+		// As of the time of release we have no P2SHBytes in test vectors
 		if decoded.P2pkh != nil {
 			if !bytes.Equal(decoded.P2pkh[:], k.P2PKHBytes) {
 				t.Errorf("%s", errors.New("decoded transparent receiver does not match test data"))
