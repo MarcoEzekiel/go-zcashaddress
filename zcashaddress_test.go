@@ -45,7 +45,7 @@ func TestZcashAddressDecodeAddress(t *testing.T) {
 // tests for error free return of universal address from DecodeAddress
 // checks that at least 2 return map []byte slices are present
 // complete coverage of universal address decoding is prived by TestUnifiedAddress
-func TestZcashAddressDecodeUniversalAddress(t *testing.T) {
+func TestZcashAddressDecodeUnifiedAddress(t *testing.T) {
 	for i, k := range uAddrData() {
 		zaddr, zaddrError := DecodeAddress(k.UnifiedAddr, Mainnet())
 
@@ -74,15 +74,6 @@ func TestUnifiedAddress(t *testing.T) {
 			t.Errorf("%s%d", e, i)
 		}
 		// prepare an empty slice for encoding
-
-		// if decoded.P2sh != nil {
-		// 	if !bytes.Equal(decoded.P2sh[:], k.P2SHBytes) {
-		// 		t.Errorf("%s", errors.New("decoded transparent address does not match test data"))
-		// 	}
-		//
-		// 	transparentPrefixed := append([]byte{P2SHItem}, decoded.P2sh[:]...)
-		// 	toEncode = append(toEncode, transparentPrefixed)
-		// }
 		if decoded.P2pkh != nil {
 			if !bytes.Equal(decoded.P2pkh[:], k.P2PKHBytes) {
 				t.Errorf("%s", errors.New("decoded transparent receiver does not match test data"))
