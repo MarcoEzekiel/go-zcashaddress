@@ -222,7 +222,7 @@ func DecodeOrchard(address string, network Network) (*[43]byte, error) {
 	}
 }
 
-// Convenience function for creating zCashAddress from [20]byte P2pkh array
+// Convenience function for creating ZcashAddress from [20]byte P2pkh array
 //
 // this will return a ZcashAddress with the P2kh value added to payload
 func P2pkh(data [20]byte) ZcashAddress {
@@ -235,7 +235,7 @@ func P2pkh(data [20]byte) ZcashAddress {
 	}
 }
 
-// Convenience function for creating zCashAddress from [20]byte P2sh array
+// Convenience function for creating ZcashAddress from [20]byte P2sh array
 //
 // this will return a ZcashAddress with the P2sh value added to payload
 func P2sh(data [20]byte) ZcashAddress {
@@ -248,7 +248,7 @@ func P2sh(data [20]byte) ZcashAddress {
 	}
 }
 
-// Convenience function for creating zCashAddress from [43]byte Sapling array
+// Convenience function for creating ZcashAddress from [43]byte Sapling array
 //
 // this will return a ZcashAddress with the Sapling value added to payload
 func Sapling(data [43]byte) ZcashAddress {
@@ -261,7 +261,7 @@ func Sapling(data [43]byte) ZcashAddress {
 	}
 }
 
-// Convenience function for creating zCashAddress from [20]byte Tex array
+// Convenience function for creating ZcashAddress from [20]byte Tex array
 //
 // this will return a ZcashAddress with the Tex value added to payload
 func Tex(data [20]byte) ZcashAddress {
@@ -274,7 +274,7 @@ func Tex(data [20]byte) ZcashAddress {
 	}
 }
 
-// Convenience function for creating zCashAddress from an UnifiedAddress
+// Convenience function for creating ZcashAddress from an UnifiedAddress
 //
 // this will return a ZcashAddress with the UnifiedAddress value added to payload
 func Unified(data unifiedaddress.UnifiedAddress) ZcashAddress {
