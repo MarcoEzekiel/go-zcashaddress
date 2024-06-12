@@ -43,6 +43,25 @@ provides the encoding prefixes for the Mainnet, Testnet, and Regtest networks.
 A set of convenience methods: DecodeP2pkh(), DecodeP2sh(), DecodeSapling(), and DecodeOrchard()
 have been provided for direct decoding to a specific type.
 
+The length of the encoding is limited by f4jumble to 4194368 bytes in accordance with
+<https://zips.z.cash/zip-0316>
+
+A unified address contains a map of Unknown Encodings of unknown lengths.
+
+```Go
+type UnifiedAddress struct {
+  P2pkh   *[20]byte
+  P2sh    *[20]byte
+  Sapling *[43]byte
+  Orchard *[43]byte
+  Unknown map[uint64][]byte
+}
+```
+
+Entries in the `Unknown` map correspond to unified address receivers and metadata entries
+that do not correspond to typecodes understood by this library.
+
 Implementation patterns can be found in the zcashaddress_test.go found in this repository.
 
-Test Vectors in the file zcashaddress_test.go are a port of the vectors found at <https://github.com/zcash/zcash-test-vectors/blob/master/test-vectors/rust/unified_address.rs>
+Test Vectors in the file zcashaddress_test.go are a port of the vectors found at
+<https://github.com/zcash/zcash-test-vectors/blob/master/test-vectors/rust/unified_address.rs>
