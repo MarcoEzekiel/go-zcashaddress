@@ -53,19 +53,19 @@ func getItemName(itemType ItemType) string {
 	return itemName
 }
 
-func tlv(typecode uint64, value []byte) []byte {
+func tlv(typecode uint64, value []byte) ([]byte, error) {
 	start, err := compactsize.WriteCompactSize(typecode, true)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	simplified := uint64(len(value))
 	st, err2 := compactsize.WriteCompactSize(simplified, true)
 	if err2 != nil {
-		panic(err2)
+		return nil, err
 	}
 
-	return append(start, append(st, value...)...)
+	return append(start, append(st, value...)...), nil
 }
 
 func padding(hrp string) []byte {
@@ -102,20 +102,45 @@ func EncodeUnified(addr *UnifiedAddress, hrp string) (string, error) {
 
 	encodedItems := make([][]byte, 0)
 	if addr.P2pkh != nil {
-		encodedItems = append(encodedItems, tlv(uint64(P2PKHItem), addr.P2pkh[:]))
+		tlvVal, err := tlv(uint64(P2PKHItem), addr.P2pkh[:])
+		if err != nil {
+			return "", err
+		} else {
+			encodedItems = append(encodedItems, tlvVal)
+		}
 	}
 	if addr.P2sh != nil {
-		encodedItems = append(encodedItems, tlv(uint64(P2SHItem), addr.P2sh[:]))
+		tlvVal, err := tlv(uint64(P2SHItem), addr.P2sh[:])
+		if err != nil {
+			return "", err
+		} else {
+			encodedItems = append(encodedItems, tlvVal)
+		}
 	}
 	if addr.Sapling != nil {
-		encodedItems = append(encodedItems, tlv(uint64(SaplingItem), addr.Sapling[:]))
+		tlvVal, err := tlv(uint64(SaplingItem), addr.Sapling[:])
+		if err != nil {
+			return "", err
+		} else {
+			encodedItems = append(encodedItems, tlvVal)
+		}
 	}
 	if addr.Orchard != nil {
-		encodedItems = append(encodedItems, tlv(uint64(OrchardItem), addr.Orchard[:]))
+		tlvVal, err := tlv(uint64(OrchardItem), addr.Orchard[:])
+		if err != nil {
+			return "", err
+		} else {
+			encodedItems = append(encodedItems, tlvVal)
+		}
 	}
 	for itemType, item := range addr.Unknown {
 		if len(item) > 0 {
-			encodedItems = append(encodedItems, tlv(uint64(itemType), item))
+			tlvVal, err := tlv(uint64(itemType), item)
+			if err != nil {
+				return "", err
+			} else {
+				encodedItems = append(encodedItems, tlvVal)
+			}
 		}
 	}
 	encodedItems = append(encodedItems, padding(hrp))
