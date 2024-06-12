@@ -15,11 +15,14 @@ import (
 
 type ItemType uint64
 
+// breaking the sequential order of items NoPreviousItem is a max value for ordering checks
+// in DecodeUnified()git
 const (
-	P2PKHItem   ItemType = 0x00
-	P2SHItem    ItemType = 0x01
-	SaplingItem ItemType = 0x02
-	OrchardItem ItemType = 0x03
+	P2PKHItem      ItemType = 0x00
+	P2SHItem       ItemType = 0x01
+	SaplingItem    ItemType = 0x02
+	OrchardItem    ItemType = 0x03
+	NoPreviousItem ItemType = 0xffffffff
 )
 
 func getExpectedLength(itemType ItemType) uint64 {
@@ -204,7 +207,9 @@ func DecodeUnified(encoded, expectedHrp string) (*UnifiedAddress, error) {
 	rest := decoded[:len(decoded)-16]
 
 	receivers := make(map[uint64][]byte)
-	prevType := -1
+	// before we start define that we have not defined a "previous" item
+	prevType := NoPreviousItem
+
 	for len(rest) > 0 {
 		itemType, remaining, e := compactsize.ParseCompactSize(rest, true)
 
@@ -237,10 +242,10 @@ func DecodeUnified(encoded, expectedHrp string) (*UnifiedAddress, error) {
 
 		receivers[itemType] = item
 		// check order of returns
-		if int(itemType) <= prevType {
+		if prevType != NoPreviousItem && ItemType(itemType) <= prevType {
 			return nil, errors.New("items out of order")
 		}
-		prevType = int(itemType)
+		prevType = ItemType(itemType)
 	}
 
 	result := new(UnifiedAddress)
