@@ -18,11 +18,14 @@ type ItemType uint64
 // breaking the sequential order of items NoPreviousItem is a max value for ordering checks
 // in DecodeUnified()git
 const (
-	P2PKHItem      ItemType = 0x00
-	P2SHItem       ItemType = 0x01
-	SaplingItem    ItemType = 0x02
-	OrchardItem    ItemType = 0x03
-	NoPreviousItem ItemType = 0xffffffff
+	P2PKHItem              ItemType = 0x00
+	P2SHItem               ItemType = 0x01
+	SaplingItem            ItemType = 0x02
+	OrchardItem            ItemType = 0x03
+	NoPreviousItem         ItemType = 0xffffffff
+	MaxAllowedEncodingType          = 0x20000000
+	MaxLenM                         = 4194368
+	MinLenM                         = 48
 )
 
 func getExpectedLength(itemType ItemType) uint64 {
@@ -137,6 +140,12 @@ func EncodeUnified(addr *UnifiedAddress, hrp string) (string, error) {
 		}
 	}
 	for itemType, item := range addr.Unknown {
+		if itemType > MaxAllowedEncodingType {
+			return "", errors.New("item type out of range")
+		}
+		if len(item) > MaxLenM || len(item) < MinLenM {
+			return "", errors.New("invalid message length")
+		}
 		if len(item) > 0 {
 			tlvVal, err := tlv(uint64(itemType), item)
 			if err != nil {
@@ -187,7 +196,7 @@ func DecodeUnified(encoded, expectedHrp string) (*UnifiedAddress, error) {
 	if hrp != expectedHrp || encoding != nil {
 		return nil, errors.New("invalid HRP or encoding")
 	}
-	if len(data) < 48 {
+	if len(data) < MinLenM {
 		return nil, errors.New("invalid encoded data length")
 	}
 	convertedBits, convertedBitsErr := bech32.ConvertBits(data, 5, 8, false)
@@ -211,7 +220,12 @@ func DecodeUnified(encoded, expectedHrp string) (*UnifiedAddress, error) {
 	prevType := NoPreviousItem
 
 	for len(rest) > 0 {
-		itemType, remaining, e := compactsize.ParseCompactSize(rest, true)
+		itemTypeCode, remaining, e := compactsize.ParseCompactSize(rest, true)
+		// check max allowed encoding type
+		if prevType != NoPreviousItem && itemTypeCode > MaxAllowedEncodingType {
+			return nil, errors.New("item type out of range")
+		}
+		itemType := ItemType(itemTypeCode)
 
 		if e != nil {
 			return nil, fmt.Errorf("error decoding item type %w", e)
@@ -222,8 +236,7 @@ func DecodeUnified(encoded, expectedHrp string) (*UnifiedAddress, error) {
 			return nil, fmt.Errorf("error decoding item data %w", e2)
 		}
 
-		expectedLen := getExpectedLength(ItemType(itemType))
-
+		expectedLen := getExpectedLength(itemType)
 		if expectedLen > 0 && itemLen != expectedLen {
 			return nil, fmt.Errorf("incorrect item length for typecode %d", itemType)
 		}
@@ -232,20 +245,19 @@ func DecodeUnified(encoded, expectedHrp string) (*UnifiedAddress, error) {
 			return nil, fmt.Errorf("insufficient data for receiver with typecode %d", itemType)
 		}
 
-		item := remaining[:itemLen]
-		rest = remaining[itemLen:]
-
 		//check for duplicate names
-		if _, exists := receivers[itemType]; exists {
-			return nil, fmt.Errorf("duplicate %s item detected", getItemName(ItemType(itemType)))
+		if _, exists := receivers[itemTypeCode]; exists {
+			return nil, fmt.Errorf("duplicate %s item detected", getItemName(itemType))
 		}
 
-		receivers[itemType] = item
 		// check order of returns
-		if prevType != NoPreviousItem && ItemType(itemType) <= prevType {
+		if prevType != NoPreviousItem && itemType <= prevType {
 			return nil, errors.New("items out of order")
 		}
-		prevType = ItemType(itemType)
+
+		receivers[itemTypeCode] = remaining[:itemLen]
+		rest = remaining[itemLen:]
+		prevType = itemType
 	}
 
 	result := new(UnifiedAddress)
