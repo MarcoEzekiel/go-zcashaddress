@@ -101,9 +101,13 @@ func DecodeAddress(address string, network Network) (result ZcashAddress, err er
 			if humanReadablePrefix == network.texHRP {
 				conv, err := bech32.ConvertBits(bech32m_decoded_address, 5, 8, true)
 				if err == nil {
-					result.Tex = new([20]byte)
-					copy(result.Tex[:], conv)
-					return result, nil
+					if len(conv) == 20 {
+						result.Tex = new([20]byte)
+						copy(result.Tex[:], conv)
+						return result, nil
+					} else {
+						return result, errors.New("tex address data must be 20 bytes")
+					}
 				} else {
 					return result, err
 				}
