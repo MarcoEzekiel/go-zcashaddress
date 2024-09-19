@@ -62,6 +62,19 @@ func TestZcashAddressDecodeUnifiedAddress(t *testing.T) {
 	}
 }
 
+// Test added for single testnet P2pkh Address.
+func TestP2pkhTestNet(t *testing.T) {
+	zaddr, zaddrError := DecodeAddress("tmDkyTviKNEZ4846hgmFks1uKGYGUUWuucm", Testnet())
+
+	if zaddr.P2pkh == nil {
+		t.Errorf("%s%d", errors.New("did not decode as a P2pkh address"), 0)
+	}
+	if zaddrError != nil {
+		t.Errorf("%s%d", errors.New("error parsing unified address"), 0)
+	}
+
+}
+
 // tests bidirectional decoding and encoding of unifiedAddress
 func TestUnifiedAddress(t *testing.T) {
 

@@ -50,7 +50,7 @@ func Mainnet() Network {
 // The Zcash testnet network constants.
 func Testnet() Network {
 	return Network{
-		p2pkhLead:    [2]byte{0x1c, 0x25},
+		p2pkhLead:    [2]byte{0x1D, 0x25},
 		p2shLead:     [2]byte{0x1c, 0xba},
 		texHRP:       "textest",
 		saplingHRP:   "ztestsapling",
